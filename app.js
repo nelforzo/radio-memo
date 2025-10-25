@@ -6,6 +6,11 @@ db.version(1).stores({
     logs: '++id, band, frequency, memo, timestamp'
 });
 
+// ページネーション設定
+const ITEMS_PER_PAGE = 10;
+let currentPage = 1;
+let totalPages = 1;
+
 // Service Worker登録
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
@@ -33,6 +38,8 @@ function setupEventListeners() {
     const logForm = document.getElementById('logForm');
     const cancelBtn = document.getElementById('cancelBtn');
     const bandSelect = document.getElementById('band');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
 
     // 新しいログボタン
     newLogBtn.addEventListener('click', showNewLogForm);
@@ -45,6 +52,10 @@ function setupEventListeners() {
 
     // バンド選択変更時の周波数単位更新
     bandSelect.addEventListener('change', updateFrequencyUnit);
+
+    // ページネーションボタン
+    prevBtn.addEventListener('click', goToPreviousPage);
+    nextBtn.addEventListener('click', goToNextPage);
 }
 
 // 新しいログフォームを表示
@@ -133,6 +144,8 @@ async function handleFormSubmit(event) {
 
     try {
         await db.logs.add(logData);
+        // 新しいログが追加されたら1ページ目に戻る
+        currentPage = 1;
         hideNewLogForm();
         await loadLogs();
     } catch (error) {
@@ -144,8 +157,31 @@ async function handleFormSubmit(event) {
 // ログ一覧を読み込み
 async function loadLogs() {
     try {
-        const logs = await db.logs.orderBy('timestamp').reverse().toArray();
+        // 総ログ数を取得
+        const totalCount = await db.logs.count();
+
+        // 総ページ数を計算
+        totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+        // 現在のページが総ページ数を超えていたら調整
+        if (currentPage > totalPages && totalPages > 0) {
+            currentPage = totalPages;
+        }
+        if (currentPage < 1) {
+            currentPage = 1;
+        }
+
+        // 現在のページのログを取得
+        const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+        const logs = await db.logs
+            .orderBy('timestamp')
+            .reverse()
+            .offset(offset)
+            .limit(ITEMS_PER_PAGE)
+            .toArray();
+
         displayLogs(logs);
+        updatePaginationControls();
     } catch (error) {
         console.error('ログの読み込みに失敗しました:', error);
     }
@@ -192,4 +228,42 @@ function formatTimestamp(timestamp) {
         hour: '2-digit',
         minute: '2-digit'
     }) + ' UTC';
+}
+
+// ページネーションコントロールを更新
+function updatePaginationControls() {
+    const pagination = document.getElementById('pagination');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfo = document.getElementById('pageInfo');
+
+    // ログが存在し、複数ページがある場合のみページネーションを表示
+    if (totalPages > 1) {
+        pagination.classList.remove('hidden');
+        pageInfo.textContent = `${currentPage} / ${totalPages}`;
+
+        // 前へボタンの有効/無効
+        prevBtn.disabled = currentPage === 1;
+
+        // 次へボタンの有効/無効
+        nextBtn.disabled = currentPage === totalPages;
+    } else {
+        pagination.classList.add('hidden');
+    }
+}
+
+// 前のページへ移動
+async function goToPreviousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        await loadLogs();
+    }
+}
+
+// 次のページへ移動
+async function goToNextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        await loadLogs();
+    }
 }
