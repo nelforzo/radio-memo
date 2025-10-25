@@ -40,6 +40,7 @@ function setupEventListeners() {
     const bandSelect = document.getElementById('band');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
 
     // 新しいログボタン
     newLogBtn.addEventListener('click', showNewLogForm);
@@ -56,6 +57,9 @@ function setupEventListeners() {
     // ページネーションボタン
     prevBtn.addEventListener('click', goToPreviousPage);
     nextBtn.addEventListener('click', goToNextPage);
+
+    // ダウンロードボタン
+    downloadBtn.addEventListener('click', downloadLogs);
 }
 
 // 新しいログフォームを表示
@@ -265,5 +269,63 @@ async function goToNextPage() {
     if (currentPage < totalPages) {
         currentPage++;
         await loadLogs();
+    }
+}
+
+// ログをCSV形式でダウンロード
+async function downloadLogs() {
+    try {
+        // 全てのログを取得（ページネーションなし）
+        const allLogs = await db.logs.orderBy('timestamp').reverse().toArray();
+
+        if (allLogs.length === 0) {
+            alert('ダウンロードするログがありません。');
+            return;
+        }
+
+        // CSVヘッダー
+        const headers = ['タイムスタンプ (UTC)', 'バンド', '周波数', '単位', 'メモ'];
+        const csvRows = [headers.join(',')];
+
+        // CSVデータ行を作成
+        allLogs.forEach(log => {
+            const unit = getFrequencyUnit(log.band);
+            const row = [
+                `"${log.timestamp}"`,
+                `"${log.band}"`,
+                log.frequency,
+                `"${unit}"`,
+                `"${log.memo || ''}"`
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        // CSV文字列を生成
+        const csvContent = csvRows.join('\n');
+
+        // BOM付きでUTF-8エンコード（Excel対応）
+        const bom = '\uFEFF';
+        const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+        // ダウンロードリンクを作成
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+
+        // ファイル名を生成（現在の日時を含む）
+        const now = new Date();
+        const dateString = now.toISOString().slice(0, 19).replace(/:/g, '-');
+        link.download = `radio-memo-${dateString}.csv`;
+
+        // ダウンロードを実行
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // URLを解放
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('ログのダウンロードに失敗しました:', error);
+        alert('ログのダウンロードに失敗しました。');
     }
 }
