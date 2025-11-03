@@ -493,6 +493,7 @@ async function importLogs(csvText) {
         // データ行を処理
         const logsToImport = [];
         let duplicateCount = 0;
+        const debugInfo = []; // デバッグ情報
 
         for (let i = 1; i < lines.length; i++) {
             const values = parseCSVLine(lines[i]);
@@ -508,6 +509,13 @@ async function importLogs(csvText) {
             // UUIDでの重複チェック
             if (uuid && existingUUIDs.has(uuid)) {
                 duplicateCount++;
+                debugInfo.push({
+                    type: 'UUID重複',
+                    uuid: uuid.substring(0, 8) + '...',
+                    band: band,
+                    frequency: frequency,
+                    memoLength: memo.length
+                });
                 continue;
             }
 
@@ -515,6 +523,13 @@ async function importLogs(csvText) {
             const contentHash = createContentHash(timestamp, frequency, memo);
             if (existingContentHashes.has(contentHash)) {
                 duplicateCount++;
+                debugInfo.push({
+                    type: 'コンテンツ重複',
+                    uuid: uuid.substring(0, 8) + '...',
+                    band: band,
+                    frequency: frequency,
+                    memoLength: memo.length
+                });
                 continue;
             }
 
@@ -541,6 +556,14 @@ async function importLogs(csvText) {
             await db.logs.bulkAdd(logsToImport);
             currentPage = 1;
             await loadLogs();
+        }
+
+        // デバッグ情報をコンソールに出力
+        if (debugInfo.length > 0) {
+            console.log('=== 重複検出の詳細 ===');
+            debugInfo.forEach((info, idx) => {
+                console.log(`${idx + 1}. [${info.type}] ${info.band} ${info.frequency} | UUID: ${info.uuid} | Memo: ${info.memoLength}文字`);
+            });
         }
 
         // 結果を表示
