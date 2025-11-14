@@ -176,7 +176,7 @@ input, textarea, select {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px; /* Minimum 16px prevents iOS Safari auto-zoom */
 }
 
 .frequency-input-group {
@@ -194,7 +194,7 @@ input, textarea, select {
     color: white;
     padding: 10px 15px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px; /* Match input field font-size for visual consistency */
     font-weight: bold;
     min-width: 60px;
     text-align: center;
