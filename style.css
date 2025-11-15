@@ -198,16 +198,30 @@ select option {
     margin-right: 10px;
 }
 
-.frequency-unit {
-    background: none;
+.frequency-unit-selector {
+    background: #fff;
     color: #000;
     padding: 10px 15px;
     border-radius: 0;
-    font-size: 16px; /* Match input field font-size for visual consistency */
+    font-size: 16px;
     font-weight: bold;
-    min-width: 60px;
+    min-width: 80px;
     text-align: center;
     border: 1px solid #000;
+    cursor: pointer;
+    font-family: 'Courier New', Consolas, Monaco, 'Liberation Mono', 'Lucida Console', monospace;
+}
+
+.frequency-unit-selector:focus {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+.band-display {
+    background-color: #f5f5f5;
+    color: #000;
+    cursor: not-allowed;
+    font-weight: bold;
 }
 
 input:focus, textarea:focus, select:focus {

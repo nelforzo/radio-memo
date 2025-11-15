@@ -87,8 +87,8 @@ function setupEventListeners() {
     const new_log_btn = document.getElementById('newLogBtn');
     const log_form = document.getElementById('logForm');
     const cancel_btn = document.getElementById('cancelBtn');
-    const band_select = document.getElementById('band');
     const frequency_input = document.getElementById('frequency');
+    const frequency_unit = document.getElementById('frequencyUnit');
     const prev_btn = document.getElementById('prevBtn');
     const next_btn = document.getElementById('nextBtn');
     const settings_btn = document.getElementById('settingsBtn');
@@ -106,15 +106,13 @@ function setupEventListeners() {
     // キャンセルボタン
     cancel_btn.addEventListener('click', hideNewLogForm);
 
-    // バンド選択変更時の周波数単位更新
-    band_select.addEventListener('change', updateFrequencyUnit);
-
     // 周波数入力のフォーマット（blur時に自動的に3桁の小数点に統一）
     frequency_input.addEventListener('blur', formatFrequencyInput);
 
-    // 周波数入力時の自動バンド検出
+    // 周波数と単位変更時の自動バンド検出
     frequency_input.addEventListener('input', detectBandFromFrequency);
     frequency_input.addEventListener('blur', detectBandFromFrequency);
+    frequency_unit.addEventListener('change', detectBandFromFrequency);
 
     // ページネーションボタン
     prev_btn.addEventListener('click', goToPreviousPage);
@@ -167,34 +165,10 @@ function hideNewLogForm() {
     const form = document.getElementById('logForm');
 
     form.reset();
-    updateFrequencyUnit(); // リセット時に単位も更新
     new_log_form.classList.add('hidden');
     log_list.classList.remove('hidden');
 }
 
-/**
- * Updates the frequency unit display based on selected band
- */
-function updateFrequencyUnit() {
-    const band_select = document.getElementById('band');
-    const frequency_unit = document.getElementById('frequencyUnit');
-    const band = band_select.value;
-
-    // バンドに応じた周波数単位の設定
-    switch (band) {
-        case 'LF':
-        case 'MF':
-            frequency_unit.textContent = 'kHz';
-            break;
-        case 'HF':
-        case 'VHF':
-        case 'UHF':
-            frequency_unit.textContent = 'MHz';
-            break;
-        default:
-            frequency_unit.textContent = 'MHz';
-    }
-}
 
 /**
  * Formats the frequency input to always show 3 decimal places
@@ -216,29 +190,35 @@ function formatFrequencyInput() {
 }
 
 /**
- * Detects and automatically selects the appropriate band based on frequency input
- * Handles both kHz and MHz units based on currently selected band
+ * Detects and automatically calculates the appropriate band based on frequency and unit
+ * Updates the read-only band display field
  */
 function detectBandFromFrequency() {
     const frequency_input = document.getElementById('frequency');
-    const band_select = document.getElementById('band');
+    const band_display = document.getElementById('band');
     const frequency_unit = document.getElementById('frequencyUnit');
 
     const value = frequency_input.value.trim();
 
-    if (value === '') return; // 空欄の場合は何もしない
+    if (value === '') {
+        band_display.value = '';
+        return;
+    }
 
     const num = parseFloat(value);
 
     // 有効な数値かチェック
-    if (isNaN(num) || num <= 0) return;
+    if (isNaN(num) || num <= 0) {
+        band_display.value = '';
+        return;
+    }
 
-    // 現在の単位を取得
-    const current_unit = frequency_unit.textContent;
+    // 選択された単位を取得
+    const unit = frequency_unit.value;
 
     // 周波数をMHzに変換（統一的な比較のため）
     let frequency_mhz;
-    if (current_unit === 'kHz') {
+    if (unit === 'kHz') {
         frequency_mhz = num / 1000; // kHzからMHzに変換
     } else {
         frequency_mhz = num; // 既にMHz
@@ -246,43 +226,33 @@ function detectBandFromFrequency() {
 
     // 周波数範囲に基づいてバンドを自動検出
     let detected_band = '';
+    let detected_band_name = '';
 
     if (frequency_mhz >= 0.03 && frequency_mhz < 0.3) {
         // LF (Longwave): 30-300 kHz (0.03-0.3 MHz)
         detected_band = 'LF';
+        detected_band_name = 'LF (Long Wave)';
     } else if (frequency_mhz >= 0.3 && frequency_mhz < 3) {
         // MF (Mediumwave): 300-3000 kHz (0.3-3 MHz)
         detected_band = 'MF';
+        detected_band_name = 'MF (Medium Wave)';
     } else if (frequency_mhz >= 3 && frequency_mhz < 30) {
         // HF (Shortwave): 3-30 MHz
         detected_band = 'HF';
+        detected_band_name = 'HF (Short Wave)';
     } else if (frequency_mhz >= 30 && frequency_mhz < 300) {
         // VHF: 30-300 MHz
         detected_band = 'VHF';
+        detected_band_name = 'VHF';
     } else if (frequency_mhz >= 300 && frequency_mhz < 3000) {
         // UHF: 300-3000 MHz
         detected_band = 'UHF';
+        detected_band_name = 'UHF';
     }
 
-    // バンドが検出された場合、自動的に選択を更新
-    if (detected_band && band_select.value !== detected_band) {
-        band_select.value = detected_band;
-
-        // バンド変更時に単位表示も更新
-        updateFrequencyUnit();
-
-        // 単位が変わった場合、周波数の値を調整（フォーマットなし）
-        const new_unit = frequency_unit.textContent;
-        if (current_unit !== new_unit) {
-            if (new_unit === 'kHz' && current_unit === 'MHz') {
-                // MHzからkHzに変換（フォーマットせず生の値）
-                frequency_input.value = num * 1000;
-            } else if (new_unit === 'MHz' && current_unit === 'kHz') {
-                // kHzからMHzに変換（フォーマットせず生の値）
-                frequency_input.value = num / 1000;
-            }
-        }
-    }
+    // バンド表示フィールドを更新
+    band_display.value = detected_band;
+    band_display.setAttribute('data-band-name', detected_band_name);
 }
 
 /**
