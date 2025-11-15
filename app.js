@@ -59,11 +59,7 @@ let total_pages = 1;
 // Service Worker登録
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js').then(function(registration) {
-            console.log('Service Worker登録成功:', registration.scope);
-        }, function(err) {
-            console.log('Service Worker登録失敗:', err);
-        });
+        navigator.serviceWorker.register('./sw.js');
     });
 }
 
@@ -169,7 +165,6 @@ function hideNewLogForm() {
     log_list.classList.remove('hidden');
 }
 
-
 /**
  * Formats the frequency input to always show 3 decimal places
  * Called on blur event to automatically format user input
@@ -226,33 +221,26 @@ function detectBandFromFrequency() {
 
     // 周波数範囲に基づいてバンドを自動検出
     let detected_band = '';
-    let detected_band_name = '';
 
     if (frequency_mhz >= 0.03 && frequency_mhz < 0.3) {
         // LF (Longwave): 30-300 kHz (0.03-0.3 MHz)
         detected_band = 'LF';
-        detected_band_name = 'LF (Long Wave)';
     } else if (frequency_mhz >= 0.3 && frequency_mhz < 3) {
         // MF (Mediumwave): 300-3000 kHz (0.3-3 MHz)
         detected_band = 'MF';
-        detected_band_name = 'MF (Medium Wave)';
     } else if (frequency_mhz >= 3 && frequency_mhz < 30) {
         // HF (Shortwave): 3-30 MHz
         detected_band = 'HF';
-        detected_band_name = 'HF (Short Wave)';
     } else if (frequency_mhz >= 30 && frequency_mhz < 300) {
         // VHF: 30-300 MHz
         detected_band = 'VHF';
-        detected_band_name = 'VHF';
     } else if (frequency_mhz >= 300 && frequency_mhz < 3000) {
         // UHF: 300-3000 MHz
         detected_band = 'UHF';
-        detected_band_name = 'UHF';
     }
 
     // バンド表示フィールドを更新
     band_display.value = detected_band;
-    band_display.setAttribute('data-band-name', detected_band_name);
 }
 
 /**
@@ -317,7 +305,6 @@ async function handleFormSubmit(event) {
         hideNewLogForm();
         await loadLogs();
     } catch (error) {
-        console.error('ログの保存に失敗しました:', error);
         alert('ログの保存に失敗しました。');
     }
 }
@@ -353,7 +340,7 @@ async function loadLogs() {
         displayLogs(logs);
         updatePaginationControls();
     } catch (error) {
-        console.error('ログの読み込みに失敗しました:', error);
+        // ログ読み込みエラーは静かに処理（データベースの初期化失敗などは稀）
     }
 }
 
@@ -442,7 +429,6 @@ async function deleteLog(log_id) {
 
         await loadLogs();
     } catch (error) {
-        console.error('ログの削除に失敗しました:', error);
         alert('ログの削除に失敗しました。');
     }
 }
@@ -581,7 +567,6 @@ async function exportLogs() {
         // URLを解放
         URL.revokeObjectURL(url);
     } catch (error) {
-        console.error('ログのエクスポートに失敗しました:', error);
         alert('ログのエクスポートに失敗しました。');
     }
 }
@@ -601,7 +586,6 @@ async function handleImportFile(event) {
         const text = await file.text();
         await importLogs(text);
     } catch (error) {
-        console.error('ファイルの読み込みに失敗しました:', error);
         alert('ファイルの読み込みに失敗しました。');
     }
 }
@@ -652,7 +636,6 @@ async function importLogs(csv_text) {
         // データ行を処理
         const logs_to_import = [];
         let duplicate_count = 0;
-        const debug_info = []; // デバッグ情報
 
         for (let i = 1; i < lines.length; i++) {
             const values = parseCSVLine(lines[i]);
@@ -670,13 +653,6 @@ async function importLogs(csv_text) {
             // UUIDでの重複チェック
             if (uuid && existing_uuids.has(uuid)) {
                 duplicate_count++;
-                debug_info.push({
-                    type: 'UUID重複',
-                    uuid: uuid.substring(0, 8) + '...',
-                    band: band,
-                    frequency: frequency,
-                    memo_length: memo.length
-                });
                 continue;
             }
 
@@ -684,13 +660,6 @@ async function importLogs(csv_text) {
             const content_hash = createContentHash(timestamp, frequency, memo);
             if (existing_content_hashes.has(content_hash)) {
                 duplicate_count++;
-                debug_info.push({
-                    type: 'コンテンツ重複',
-                    uuid: uuid.substring(0, 8) + '...',
-                    band: band,
-                    frequency: frequency,
-                    memo_length: memo.length
-                });
                 continue;
             }
 
@@ -721,20 +690,11 @@ async function importLogs(csv_text) {
             await loadLogs();
         }
 
-        // デバッグ情報をコンソールに出力
-        if (debug_info.length > 0) {
-            console.log('=== 重複検出の詳細 ===');
-            debug_info.forEach((info, idx) => {
-                console.log(`${idx + 1}. [${info.type}] ${info.band} ${info.frequency} | UUID: ${info.uuid} | Memo: ${info.memo_length}文字`);
-            });
-        }
-
         // 結果を表示
         const message = `インポート完了\n新規追加: ${logs_to_import.length}件\n重複スキップ: ${duplicate_count}件`;
         alert(message);
 
     } catch (error) {
-        console.error('インポートに失敗しました:', error);
         alert('インポートに失敗しました。CSVファイルの形式を確認してください。');
     }
 }

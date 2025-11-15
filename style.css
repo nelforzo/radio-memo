@@ -51,11 +51,6 @@ h2 {
     font-size: 18px;
 }
 
-/* ログリストのh2 */
-#logList h2 {
-    margin-bottom: 15px;
-}
-
 .btn-primary, .btn-secondary {
     padding: 10px 20px;
     border: 1px solid #000;
@@ -153,6 +148,10 @@ main {
 }
 
 .hidden {
+    display: none;
+}
+
+.hidden-file-input {
     display: none;
 }
 
@@ -326,10 +325,7 @@ textarea {
     right: 15px;
 }
 
-.btn-delete:hover {
-    background-color: #e0e0e0;
-}
-
+.btn-delete:hover,
 .btn-delete:active {
     background-color: #e0e0e0;
 }
