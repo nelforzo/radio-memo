@@ -67,6 +67,7 @@ function generateUUID() {
 const ITEMS_PER_PAGE = 10;
 let current_page = 1;
 let total_pages = 1;
+let cached_total_count = null; // キャッシュされたログ総数（パフォーマンス最適化）
 
 // Service Worker登録
 if ('serviceWorker' in navigator) {
@@ -125,16 +126,28 @@ function setupEventListeners() {
     prev_btn.addEventListener('click', goToPreviousPage);
     next_btn.addEventListener('click', goToNextPage);
 
+    // ポップオーバー外をクリックしたら閉じる（名前付き関数で管理）
+    const closePopoverOnOutsideClick = (e) => {
+        if (!settings_popover.contains(e.target) && e.target !== settings_btn) {
+            settings_popover.classList.add('hidden');
+            document.removeEventListener('click', closePopoverOnOutsideClick);
+        }
+    };
+
     // 設定ボタン
     settings_btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        const isHidden = settings_popover.classList.contains('hidden');
         settings_popover.classList.toggle('hidden');
-    });
 
-    // ポップオーバー外をクリックしたら閉じる
-    document.addEventListener('click', (e) => {
-        if (!settings_popover.contains(e.target) && e.target !== settings_btn) {
-            settings_popover.classList.add('hidden');
+        if (isHidden) {
+            // ポップオーバーを開く場合のみリスナーを追加
+            setTimeout(() => {
+                document.addEventListener('click', closePopoverOnOutsideClick);
+            }, 0);
+        } else {
+            // ポップオーバーを閉じる場合はリスナーを削除
+            document.removeEventListener('click', closePopoverOnOutsideClick);
         }
     });
 
@@ -142,12 +155,14 @@ function setupEventListeners() {
     export_btn.addEventListener('click', () => {
         exportLogs();
         settings_popover.classList.add('hidden');
+        document.removeEventListener('click', closePopoverOnOutsideClick);
     });
 
     // インポートボタン
     import_btn.addEventListener('click', () => {
         import_file.click();
         settings_popover.classList.add('hidden');
+        document.removeEventListener('click', closePopoverOnOutsideClick);
     });
     import_file.addEventListener('change', handleImportFile);
 }
@@ -317,6 +332,10 @@ async function handleFormSubmit(event) {
 
     try {
         await db.logs.add(log_data);
+        // キャッシュされたカウントを更新
+        if (cached_total_count !== null) {
+            cached_total_count++;
+        }
         // 新しいログが追加されたら1ページ目に戻る
         current_page = 1;
         hideNewLogForm();
@@ -331,8 +350,11 @@ async function handleFormSubmit(event) {
  */
 async function loadLogs() {
     try {
-        // 総ログ数を取得
-        const total_count = await db.logs.count();
+        // 総ログ数を取得（キャッシュがない場合のみクエリ）
+        if (cached_total_count === null) {
+            cached_total_count = await db.logs.count();
+        }
+        const total_count = cached_total_count;
 
         // 総ページ数を計算
         total_pages = Math.ceil(total_count / ITEMS_PER_PAGE);
@@ -435,6 +457,10 @@ async function deleteLog(log_id) {
 
     try {
         await db.logs.delete(log_id);
+        // キャッシュされたカウントを更新
+        if (cached_total_count !== null) {
+            cached_total_count--;
+        }
 
         // 現在のページのログを再読み込み
         const remaining_logs_on_page = await db.logs
@@ -712,6 +738,8 @@ async function importLogs(csv_text) {
         // データベースに追加
         if (logs_to_import.length > 0) {
             await db.logs.bulkAdd(logs_to_import);
+            // 複数ログを追加したのでキャッシュを無効化（次回ロード時に再計算）
+            cached_total_count = null;
             current_page = 1;
             await loadLogs();
         }
