@@ -56,6 +56,11 @@ db.version(5).stores({
 
 // UUID生成関数
 function generateUUID() {
+    // モダンブラウザではcrypto.randomUUID()を使用（暗号学的に安全）
+    if (crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    // 古いブラウザ用のフォールバック
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -633,9 +638,12 @@ async function handleImportFile(event) {
 
     try {
         const text = await file.text();
+        // インポート開始メッセージ
+        console.log('インポート開始:', file.name);
         await importLogs(text);
     } catch (error) {
         alert('ファイルの読み込みに失敗しました。');
+        console.error('Import error:', error);
     }
 }
 
@@ -735,9 +743,31 @@ async function importLogs(csv_text) {
             existing_content_hashes.add(content_hash);
         }
 
-        // データベースに追加
+        // データベースに追加（大量データの場合はバッチ処理）
         if (logs_to_import.length > 0) {
-            await db.logs.bulkAdd(logs_to_import);
+            const BATCH_SIZE = 500; // 一度に処理する件数
+            const total_to_import = logs_to_import.length;
+
+            // 大量データの場合はバッチ処理で追加
+            if (total_to_import > BATCH_SIZE) {
+                console.log(`大量インポート開始: ${total_to_import}件をバッチ処理中...`);
+
+                for (let i = 0; i < total_to_import; i += BATCH_SIZE) {
+                    const batch = logs_to_import.slice(i, i + BATCH_SIZE);
+                    await db.logs.bulkAdd(batch);
+
+                    // 進捗をコンソールに出力
+                    const progress = Math.min(i + BATCH_SIZE, total_to_import);
+                    console.log(`インポート進捗: ${progress} / ${total_to_import} (${Math.round(progress / total_to_import * 100)}%)`);
+
+                    // UIスレッドに制御を返して、ブラウザがフリーズしないようにする
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+            } else {
+                // 少量データは一括追加
+                await db.logs.bulkAdd(logs_to_import);
+            }
+
             // 複数ログを追加したのでキャッシュを無効化（次回ロード時に再計算）
             cached_total_count = null;
             current_page = 1;
@@ -747,9 +777,11 @@ async function importLogs(csv_text) {
         // 結果を表示
         const message = `インポート完了\n新規追加: ${logs_to_import.length}件\n重複スキップ: ${duplicate_count}件`;
         alert(message);
+        console.log('インポート完了:', message.replace(/\n/g, ' '));
 
     } catch (error) {
         alert('インポートに失敗しました。CSVファイルの形式を確認してください。');
+        console.error('Import failed:', error);
     }
 }
 
