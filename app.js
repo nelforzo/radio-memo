@@ -118,7 +118,6 @@ function setupEventListeners() {
     frequency_input.addEventListener('blur', formatFrequencyInput);
 
     // 周波数と単位変更時の自動バンド検出
-    frequency_input.addEventListener('input', detectBandFromFrequency);
     frequency_input.addEventListener('blur', detectBandFromFrequency);
     frequency_unit.addEventListener('change', detectBandFromFrequency);
 
