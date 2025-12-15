@@ -497,7 +497,7 @@ function displayLogs(logs, append = false) {
 }
 
 /**
- * Sets up event delegation for log entries (delete and memo expansion)
+ * Sets up event delegation for log entries (delete, memo expansion, and selection)
  * Uses event delegation pattern - single listener on container instead of multiple listeners
  * This improves performance and prevents memory leaks
  */
@@ -518,6 +518,29 @@ function setupLogEventListeners() {
         if (e.target.classList.contains('log-memo')) {
             e.target.classList.toggle('expanded');
             return;
+        }
+
+        // Handle log entry selection (show delete button)
+        const log_entry = e.target.closest('.log-entry');
+        if (log_entry) {
+            // Remove 'selected' class from all other entries
+            const all_entries = logs_container.querySelectorAll('.log-entry');
+            all_entries.forEach(entry => {
+                if (entry !== log_entry) {
+                    entry.classList.remove('selected');
+                }
+            });
+
+            // Toggle 'selected' class on clicked entry
+            log_entry.classList.toggle('selected');
+        }
+    });
+
+    // Click outside logs container to deselect all
+    document.addEventListener('click', (e) => {
+        if (!logs_container.contains(e.target)) {
+            const all_entries = logs_container.querySelectorAll('.log-entry');
+            all_entries.forEach(entry => entry.classList.remove('selected'));
         }
     });
 }

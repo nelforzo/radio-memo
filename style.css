@@ -416,6 +416,11 @@ textarea {
     background-color: #f5f5f5;
 }
 
+/* Selected entry visual indicator */
+.log-entry.selected {
+    background-color: #f5f5f5;
+}
+
 /* Desktop: Multi-column grid layout for better space utilization */
 @media (min-width: 900px) {
     #logs {
@@ -538,6 +543,19 @@ textarea {
     position: absolute;
     top: 10px;
     right: 10px;
+    display: none; /* Hidden by default */
+}
+
+/* Show delete button when entry is selected */
+.log-entry.selected .btn-delete {
+    display: block;
+}
+
+/* Desktop: Show delete button on hover for mouse users */
+@media (min-width: 768px) and (hover: hover) {
+    .log-entry:hover .btn-delete {
+        display: block;
+    }
 }
 
 .btn-delete:hover,
@@ -725,6 +743,11 @@ footer a:hover {
     }
 
     .log-entry:hover {
+        background-color: #3a3a3a;
+    }
+
+    /* Dark mode: Selected entry visual indicator */
+    .log-entry.selected {
         background-color: #3a3a3a;
     }
 
