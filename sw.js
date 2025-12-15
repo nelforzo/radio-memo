@@ -1,6 +1,6 @@
 // Service Worker for offline functionality
-// v47: Replace "show more" button with automatic infinite scroll
-const CACHE_NAME = 'radio-memo-v47';
+// v48: Fix FAB plus sign vertical centering with DotGothic16 font
+const CACHE_NAME = 'radio-memo-v48';
 const urls_to_cache = [
     './',
     './index.html',

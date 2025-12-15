@@ -681,9 +681,10 @@ textarea {
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 0.9;
+    line-height: 1;
     padding: 0;
-    padding-bottom: 2px; /* Fine-tune vertical centering for DotGothic16 */
+    /* Fine-tune vertical centering for DotGothic16 font metrics */
+    padding-top: 4px;
 }
 
 .fab-button:hover {
