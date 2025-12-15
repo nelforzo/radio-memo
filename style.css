@@ -147,11 +147,27 @@ h2 {
     background-color: #e0e0e0;
 }
 
-/* 設定ボタンとポップオーバー */
-.settings-container {
+/* フッターボタンコンテナ（管理と"さらに表示"ボタン） */
+.footer-buttons {
     margin-top: 20px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Desktop: Improve footer button spacing */
+@media (min-width: 768px) {
+    .footer-buttons {
+        margin-top: 30px;
+        gap: 20px;
+    }
+}
+
+/* 設定ボタンとポップオーバー */
+.settings-container {
+    display: flex;
+    justify-content: flex-start;
     position: relative;
 }
 
@@ -169,6 +185,37 @@ h2 {
 
 .btn-settings:hover {
     background-color: #e0e0e0;
+}
+
+.btn-show-more {
+    padding: 10px 20px;
+    border: 1px solid #000;
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 14px;
+    background: none;
+    color: #000;
+    transition: all 0.3s;
+    text-decoration: none;
+}
+
+/* Desktop: Larger show more button for better usability */
+@media (min-width: 768px) {
+    .btn-show-more {
+        padding: 12px 24px;
+        font-size: 15px;
+    }
+}
+
+.btn-show-more:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.btn-show-more:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #666;
+    color: #666;
 }
 
 .settings-popover {
@@ -693,13 +740,18 @@ footer a:hover {
         background-color: #3a3a3a;
     }
 
-    .btn-primary, .btn-secondary, .btn-settings {
+    .btn-primary, .btn-secondary, .btn-settings, .btn-show-more {
         color: #e0e0e0;
         border: 1px solid #e0e0e0;
     }
 
-    .btn-primary:hover, .btn-secondary:hover, .btn-settings:hover {
+    .btn-primary:hover, .btn-secondary:hover, .btn-settings:hover, .btn-show-more:hover:not(:disabled) {
         background-color: #3a3a3a;
+    }
+
+    .btn-show-more:disabled {
+        border: 1px solid #666;
+        color: #666;
     }
 
     .btn-delete {

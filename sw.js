@@ -1,6 +1,6 @@
 // Service Worker for offline functionality
-// v39: Add comprehensive JSDoc documentation and coding conventions
-const CACHE_NAME = 'radio-memo-v39';
+// v40: Replace pagination with "show more" button for infinite scroll
+const CACHE_NAME = 'radio-memo-v40';
 const urls_to_cache = [
     './',
     './index.html',
