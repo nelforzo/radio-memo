@@ -1,6 +1,6 @@
 // Service Worker for offline functionality
-// v42: Show delete button only for selected log entry
-const CACHE_NAME = 'radio-memo-v42';
+// v43: Adjust app title - smaller size and left-aligned
+const CACHE_NAME = 'radio-memo-v43';
 const urls_to_cache = [
     './',
     './index.html',
