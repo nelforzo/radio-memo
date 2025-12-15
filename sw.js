@@ -1,6 +1,6 @@
 // Service Worker for offline functionality
-// v43: Adjust app title - smaller size and left-aligned
-const CACHE_NAME = 'radio-memo-v43';
+// v44: Remove border from header container
+const CACHE_NAME = 'radio-memo-v44';
 const urls_to_cache = [
     './',
     './index.html',

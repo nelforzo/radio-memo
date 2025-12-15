@@ -48,8 +48,6 @@ input, textarea, select, button {
 header {
     background-color: #fff;
     padding: 14px;
-    border-radius: 0;
-    border: 1px solid #ccc;
     margin-bottom: 14px;
     display: flex;
     justify-content: space-between;
@@ -714,7 +712,11 @@ footer a:hover {
         color: #e0e0e0;
     }
 
-    header, main {
+    header {
+        background-color: #2a2a2a;
+    }
+
+    main {
         background-color: #2a2a2a;
         border-color: #555;
     }
