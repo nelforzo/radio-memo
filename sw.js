@@ -1,6 +1,6 @@
 // Service Worker for offline functionality
-// v40: Replace pagination with "show more" button for infinite scroll
-const CACHE_NAME = 'radio-memo-v40';
+// v41: Reduce padding throughout app to optimize screen space
+const CACHE_NAME = 'radio-memo-v41';
 const urls_to_cache = [
     './',
     './index.html',
