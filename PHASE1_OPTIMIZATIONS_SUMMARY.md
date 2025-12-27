@@ -8,7 +8,9 @@
 ## Optimizations Implemented
 
 ### 1. ✅ HTML Escaping Function (app.js:679-687)
+
 **Previous Implementation**: DOM element creation method
+
 ```javascript
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -18,6 +20,7 @@ function escapeHtml(text) {
 ```
 
 **New Implementation**: Regex-based approach
+
 ```javascript
 function escapeHtml(text) {
     if (!text) return '';
@@ -36,6 +39,7 @@ function escapeHtml(text) {
 ---
 
 ### 2. ✅ Timestamp Memoization Cache (app.js:689-725)
+
 **New Addition**: Map-based cache for formatted timestamps
 
 ```javascript
@@ -69,17 +73,20 @@ function formatTimestamp(timestamp) {
 ---
 
 ### 3. ✅ Combined Duplicate Event Listeners (app.js:183-191)
+
 **Previous Implementation**: Two separate blur listeners
+
 ```javascript
 frequency_input.addEventListener('blur', formatFrequencyInput);
 frequency_input.addEventListener('blur', detectBandFromFrequency);
 ```
 
 **New Implementation**: Single combined handler
+
 ```javascript
 // 周波数入力のフォーマットと自動バンド検出（blur時に両方実行）
 // Optimized: Combined duplicate blur listeners into single handler
-frequency_input.addEventListener('blur', function() {
+frequency_input.addEventListener('blur', function () {
     formatFrequencyInput();
     detectBandFromFrequency();
 });
@@ -91,6 +98,7 @@ frequency_input.addEventListener('blur', function() {
 ---
 
 ### 4. ✅ DOM Query Caching (app.js:85-132)
+
 **New Addition**: Module-level cache for frequently-accessed DOM elements
 
 ```javascript
@@ -123,7 +131,7 @@ function cacheDOMElements() {
         import_file: document.getElementById('importFile'),
         page_title: document.getElementById('pageTitle'),
         back_to_top_link: document.getElementById('backToTopLink'),
-        end_of_list: document.getElementById('endOfList')
+        end_of_list: document.getElementById('endOfList'),
     };
 }
 ```
@@ -147,6 +155,7 @@ All following functions updated to use `dom_cache` instead of repeated `getEleme
 8. ✅ `updateEndOfListMessage()` (app.js:605-631)
 
 **Pattern Used**:
+
 ```javascript
 function someFunction() {
     const { frequency_input, band_display } = dom_cache;
@@ -159,32 +168,38 @@ function someFunction() {
 ## CODING_CONVENTIONS.md Compliance Checklist
 
 ### ✅ Variable Naming
+
 - [x] All variables use `snake_case`
 - [x] Constants use `snake_case` (not SCREAMING_CASE except for readability)
 - [x] No camelCase variables
 
 **Examples**:
+
 - ✅ `dom_cache` (not `DOM_CACHE` or `domCache`)
 - ✅ `timestamp_cache` (not `timestampCache`)
 - ✅ `frequency_input` (not `frequencyInput`)
 - ✅ `new_log_btn` (not `newLogBtn`)
 
 ### ✅ Function Naming
+
 - [x] All functions use `camelCase`
 - [x] Descriptive, action-oriented names
 
 **Examples**:
+
 - ✅ `cacheDOMElements()`
 - ✅ `formatFrequencyInput()`
 - ✅ `detectBandFromFrequency()`
 
 ### ✅ Documentation
+
 - [x] All functions have JSDoc comments
 - [x] Includes `@param` tags with types
 - [x] Includes `@returns` tags where applicable
 - [x] Inline comments explain "why" not "what"
 
 **Example**:
+
 ```javascript
 /**
  * Escapes HTML special characters to prevent XSS
@@ -195,6 +210,7 @@ function someFunction() {
 ```
 
 ### ✅ Code Style
+
 - [x] `const` used for values that don't change
 - [x] `let` used for values that will be reassigned
 - [x] No `var` used
@@ -204,12 +220,12 @@ function someFunction() {
 
 ## Performance Metrics Summary
 
-| Optimization | Performance Gain | Complexity | Status |
-|--------------|-----------------|------------|--------|
-| HTML Escaping | 50-100x faster | Low | ✅ Complete |
-| Timestamp Cache | 40-60% faster | Low | ✅ Complete |
-| Event Listener Merge | Minor overhead reduction | Low | ✅ Complete |
-| DOM Query Cache | 5-10% faster | Medium | ✅ Complete |
+| Optimization         | Performance Gain         | Complexity | Status      |
+| -------------------- | ------------------------ | ---------- | ----------- |
+| HTML Escaping        | 50-100x faster           | Low        | ✅ Complete |
+| Timestamp Cache      | 40-60% faster            | Low        | ✅ Complete |
+| Event Listener Merge | Minor overhead reduction | Low        | ✅ Complete |
+| DOM Query Cache      | 5-10% faster             | Medium     | ✅ Complete |
 
 **Overall Expected Impact**: 15-30% improvement in render times
 
@@ -230,18 +246,18 @@ function someFunction() {
 ## Files Modified
 
 1. **app.js**
-   - Lines 85-86: Added `dom_cache` variable
-   - Lines 100-132: Added `cacheDOMElements()` function
-   - Lines 138: Added cache initialization to `init()`
-   - Lines 147-245: Updated `setupEventListeners()` to use cache
-   - Lines 183-191: Combined duplicate blur listeners
-   - Lines 251-273: Updated form functions to use cache
-   - Lines 280-359: Updated frequency functions to use cache
-   - Lines 517-549: Updated `displayLogs()` to use cache
-   - Lines 557-599: Updated `setupLogEventListeners()` to use cache
-   - Lines 605-631: Updated `updateEndOfListMessage()` to use cache
-   - Lines 679-687: Optimized `escapeHtml()` function
-   - Lines 689-725: Added timestamp caching to `formatTimestamp()`
+    - Lines 85-86: Added `dom_cache` variable
+    - Lines 100-132: Added `cacheDOMElements()` function
+    - Lines 138: Added cache initialization to `init()`
+    - Lines 147-245: Updated `setupEventListeners()` to use cache
+    - Lines 183-191: Combined duplicate blur listeners
+    - Lines 251-273: Updated form functions to use cache
+    - Lines 280-359: Updated frequency functions to use cache
+    - Lines 517-549: Updated `displayLogs()` to use cache
+    - Lines 557-599: Updated `setupLogEventListeners()` to use cache
+    - Lines 605-631: Updated `updateEndOfListMessage()` to use cache
+    - Lines 679-687: Optimized `escapeHtml()` function
+    - Lines 689-725: Added timestamp caching to `formatTimestamp()`
 
 ---
 
@@ -257,6 +273,7 @@ function someFunction() {
 ## Next Steps (Phase 2)
 
 Phase 2 optimizations will include:
+
 1. CSV parsing optimization
 2. Document fragment rendering
 3. Font loading optimization

@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Cache
+.cache/
+*.log
+
+# System files
+.DS_Store
+
+# Git
+.git/
+
+# Icons and images
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.ico
+
+# Already formatted or special syntax
+manifest.json
