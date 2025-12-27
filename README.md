@@ -27,7 +27,10 @@
   - 一覧表示時にバンドが表示されます
 - **周波数の自動フォーマット**: 入力フィールドから離れると、自動的に3桁の小数点形式（例: 7.000）にフォーマットされます
 - **UTC時刻記録**: ログ作成時のUTC時刻を自動設定、一覧表示時はローカルタイムゾーンで表示
-- **ページネーション**: 最新10件ずつ表示、前後のページに移動可能
+- **ページネーション**: 最新10件ずつ表示、「さらに表示」ボタンで追加読み込み
+  - 手動ローディング方式で必要な分だけ読み込み
+  - すべてのログを表示したら終了メッセージを表示
+  - 同時読み込みを防止するロック機構
 
 #### データ管理
 - **データストレージ**: IndexedDB（Dexie.js使用）でローカルに保存
@@ -42,6 +45,8 @@
 - **インポート機能**: CSV形式でログを一括インポート
   - UUID-based重複検出: 同じUUIDのログは自動スキップ
   - コンテンツベース重複検出: 時刻、周波数、メモが同一のログも自動スキップ
+  - 大量インポート時のバッチ処理: 500件ずつ処理してUI凍結を防止
+  - 堅牢なCSVパース: 引用符フィールド、複数行フィールド、各種改行コード（CR/LF/CRLF）に対応
   - インポート結果を通知（新規追加件数、重複スキップ件数）
 
 #### オフライン機能
@@ -59,12 +64,24 @@
 
 #### ユーザーインターフェース
 - **ミニマリストデザイン**: テキスト中心の装飾のないUI、モノスペースフォント採用
+- **ダークモード対応**: システム設定に応じて自動的にダークモードに切り替わります
 - **レスポンシブデザイン**: モバイルとデスクトップの両方に対応
+  - スマホ（〜600px）: 1カラムレイアウト
+  - タブレット（768px〜）: 2カラムグリッド
+  - デスクトップ（900px〜）: 最大3カラムグリッド
+  - 大型ディスプレイ（1400px〜）: 1400px最大幅で中央配置
+- **スティッキーヘッダー**: スクロール時も上部に固定されるヘッダー
+  - 「追加」ボタンをヘッダーに配置し、常にアクセス可能
+  - タイトルクリックでページ上部へスムーズスクロール
+  - キーボードナビゲーション対応（Enter/Spaceキー）
 - **メモの自動省略**: 長いメモは3行まで表示、クリックで全文表示
 - **長いURL対応**: ShazamリンクなどのURLも画面幅に収まるよう自動改行
 - **設定メニュー**: ページ下部の「管理」ボタンからエクスポート・インポート機能にアクセス
+  - クリック外しで自動的に閉じるポップオーバー
 - **直感的な操作**: シンプルで分かりやすいUI
 - **モバイル最適化**: タッチ操作に適したボタンサイズ
+- **キーボードアクセシビリティ**: すべてのインタラクティブ要素にキーボードでアクセス可能
+- **トップへ戻るリンク**: 20件以上のログを読み込んだ時にリスト下部に表示
 
 ### 技術スタック
 
@@ -74,6 +91,22 @@
 - **Dexie.js 3.2.4**: IndexedDBのラッパーライブラリ（CDN経由）
 - **Service Worker**: オフライン機能とキャッシング
 - **PWA**: プログレッシブウェブアプリケーション技術
+
+### パフォーマンスとセキュリティ
+
+#### パフォーマンス最適化
+- **イベントデリゲーション**: 全ログエントリに対して単一のイベントリスナーを使用し、メモリ使用量を削減
+- **バッチ処理**: 大量データインポート時に500件ずつ処理してUIの応答性を維持
+- **周波数計算の最適化**: 前回の値をキャッシュして不要な再計算を回避
+- **遅延ローディング**: ページネーションで必要な分だけデータを読み込み
+- **効率的なクエリ**: Dexieのoffset/limit機能を使用した高速なデータベースクエリ
+
+#### セキュリティ機能
+- **XSS対策**: すべてのユーザー入力を表示前にエスケープ処理
+- **ローカルデータストレージ**: サーバーへのデータ送信なし、すべてブラウザ内で処理
+- **UUID生成**: Crypto APIを使用（フォールバックあり）
+- **入力検証**: 数値パースとNaNチェックによる堅牢な入力処理
+- **確認ダイアログ**: 削除操作には必ず確認を要求
 
 ### データ構造
 
@@ -270,7 +303,10 @@ As my understanding as an operator deepens, features may be added, modified, or 
   - Displayed in the log list view
 - **Automatic Frequency Formatting**: When you leave the input field, frequency is automatically formatted to 3 decimal places (e.g., 7.000)
 - **UTC Time Recording**: Automatically sets UTC time when creating logs, displays in local timezone in list view
-- **Pagination**: Display 10 most recent records per page with navigation
+- **Pagination**: Display 10 most recent records per page, load more with "さらに表示" button
+  - Manual loading approach to load only what's needed
+  - End-of-list message when all logs are displayed
+  - Concurrent load prevention mechanism
 
 #### Data Management
 - **Data Storage**: Stored locally using IndexedDB (via Dexie.js)
@@ -285,6 +321,8 @@ As my understanding as an operator deepens, features may be added, modified, or 
 - **Import Function**: Bulk import logs from CSV
   - UUID-based duplicate detection: Automatically skips logs with same UUID
   - Content-based duplicate detection: Also skips logs with identical time, frequency, and memo
+  - Batch processing for large imports: Processes 500 items at a time to prevent UI freezing
+  - Robust CSV parsing: Handles quoted fields, multiline fields, and various line endings (CR/LF/CRLF)
   - Import result notification (new records added, duplicates skipped)
 
 #### Offline Capabilities
@@ -302,12 +340,24 @@ As my understanding as an operator deepens, features may be added, modified, or 
 
 #### User Interface
 - **Minimalist Design**: Text-focused interface with no visual decorations, monospaced font throughout
+- **Dark Mode Support**: Automatically switches to dark mode based on system preferences
 - **Responsive Design**: Works on both mobile and desktop
+  - Mobile (~600px): Single column layout
+  - Tablet (768px+): 2-column grid
+  - Desktop (900px+): Up to 3-column grid
+  - Large displays (1400px+): Max 1400px width, centered
+- **Sticky Header**: Header remains fixed at top when scrolling
+  - Add button placed in header for constant access
+  - Click title to smoothly scroll to top
+  - Keyboard navigation support (Enter/Space keys)
 - **Auto-truncating Memos**: Long memos display up to 3 lines, click to expand
 - **Long URL Support**: URLs like Shazam links wrap automatically to fit screen width
 - **Settings Menu**: Access export/import functions via "管理" (Management) button at bottom of page
+  - Auto-dismissing popover when clicking outside
 - **Intuitive Operation**: Simple and clear UI
 - **Mobile Optimized**: Touch-friendly button sizes
+- **Keyboard Accessibility**: All interactive elements accessible via keyboard
+- **Back to Top Link**: Appears at bottom of list when 20+ logs are loaded
 
 ### Technology Stack
 
@@ -317,6 +367,22 @@ As my understanding as an operator deepens, features may be added, modified, or 
 - **Dexie.js 3.2.4**: IndexedDB wrapper library (via CDN)
 - **Service Worker**: Offline functionality and caching
 - **PWA**: Progressive Web Application technologies
+
+### Performance and Security
+
+#### Performance Optimizations
+- **Event Delegation**: Uses single event listener for all log entries to reduce memory usage
+- **Batch Processing**: Processes large data imports in 500-item batches to maintain UI responsiveness
+- **Frequency Calculation Optimization**: Caches previous value to avoid unnecessary recalculation
+- **Lazy Loading**: Pagination loads only needed data
+- **Efficient Queries**: Uses Dexie's offset/limit features for fast database queries
+
+#### Security Features
+- **XSS Prevention**: All user input is escaped before display
+- **Local Data Storage**: No data transmission to servers, all processing happens in browser
+- **UUID Generation**: Uses Crypto API (with fallback)
+- **Input Validation**: Robust input handling with number parsing and NaN checks
+- **Confirmation Dialogs**: Delete operations always require confirmation
 
 ### Data Structure
 
@@ -510,8 +576,18 @@ radio-memo/
 
 - **Dexie.js**: Simplifies IndexedDB operations with promises and schema versioning
 - **Service Worker**: Implements cache-first strategy for offline support
+  - Cache versioning for updates (current: v56)
+  - Caches all app files, external libraries, and fonts
+  - Network fallback for cache misses
+  - Whitelisted external URLs (unpkg.com, googleapis.com, gstatic.com)
 - **CSS Flexbox**: Responsive layout without frameworks
+  - 6-level responsive breakpoint system
+  - CSS Grid for multi-column layouts
+  - Native CSS dark mode via media queries
 - **Vanilla JS**: No build process or transpilation required
+  - Event delegation for efficient event handling
+  - Crypto API for UUID generation with Math.random() fallback
+  - Content-based and UUID-based duplicate detection
 
 ### Database Schema
 
