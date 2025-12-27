@@ -621,6 +621,18 @@ radio-memo/
     - Crypto API for UUID generation with Math.random() fallback
     - Content-based and UUID-based duplicate detection
 
+### Dependencies
+
+**Runtime Dependencies** (loaded via CDN):
+- Dexie.js v3.2.4 - IndexedDB wrapper
+- DotGothic16 font - Google Fonts
+
+**Development Dependencies** (for contributors):
+- ESLint v8.57.0 - JavaScript linter
+- Prettier v3.2.4 - Code formatter
+
+Note: Development dependencies are optional. The app runs without Node.js or npm.
+
 ### Database Schema
 
 The app uses Dexie.js schema versioning (currently v5):
@@ -642,8 +654,88 @@ logs: '++id, uuid, band, frequency, callsign, qth, rst, memo, timestamp';
 - `memo`: User notes
 - `timestamp`: ISO 8601 UTC timestamp
 
+### Coding Standards
+
+This project follows JavaScript industry standards for code quality and consistency.
+
+#### Naming Conventions
+
+- **Variables**: `camelCase` (e.g., `loadedCount`, `isLoadingLogs`)
+- **Functions**: `camelCase` (e.g., `loadLogs()`, `formatTimestamp()`)
+- **Constants**: `SCREAMING_SNAKE_CASE` (e.g., `ITEMS_PER_LOAD`)
+- **CSS Classes/IDs**: `kebab-case` (e.g., `new-log-form`, `btn-primary`)
+
+**Rationale**: Aligns with 95%+ of JavaScript projects and industry style guides (Airbnb, Google, StandardJS)
+
+#### Code Quality Tools
+
+The project uses industry-standard linting and formatting tools:
+
+**ESLint** - JavaScript linter
+- Enforces camelCase naming
+- Prevents common bugs (`no-var`, `eqeqeq`)
+- Ensures code consistency
+- Configuration: `.eslintrc.json`
+
+**Prettier** - Code formatter
+- Automatic code formatting
+- Consistent style across all files
+- Configuration: `.prettierrc.json`
+
+#### Development Workflow
+
+```bash
+# Install dependencies (first time only)
+npm install
+
+# Check for linting errors
+npm run lint
+
+# Auto-fix linting errors
+npm run lint:fix
+
+# Format all files
+npm run format
+
+# Check formatting without making changes
+npm run format:check
+```
+
+#### Pre-Commit Checklist
+
+Before committing code:
+
+1. Run `npm run lint` to verify no errors
+2. Run `npm run format` to ensure consistent formatting
+3. Test changes in browser
+4. Commit with descriptive message
+
+#### IDE Setup (VS Code)
+
+Install recommended extensions:
+- ESLint (`dbaeumer.vscode-eslint`)
+- Prettier (`esbenp.prettier-vscode`)
+
+Enable format-on-save in `.vscode/settings.json`:
+
+```json
+{
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
+}
+```
+
 ### Contributing
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
+
+When contributing:
+- Follow the coding standards outlined above
+- Run linting and formatting before submitting
+- Include tests if adding new functionality
+- Update documentation as needed
 
 **Author**: [nelforzo.github.io](https://nelforzo.github.io)

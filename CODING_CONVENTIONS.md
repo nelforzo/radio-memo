@@ -15,6 +15,7 @@ This document defines the comprehensive coding standards for the Radio Memo proj
 9. [Performance](#performance)
 10. [Testing](#testing)
 11. [File Structure](#file-structure)
+12. [Linting and Formatting](#linting-and-formatting)
 
 ---
 
@@ -764,7 +765,114 @@ radio-memo/
 
 ---
 
+## Linting and Formatting
+
+### Overview
+
+This project uses industry-standard tools to enforce code quality and consistent formatting:
+
+- **ESLint** - JavaScript linter for code quality and consistency
+- **Prettier** - Opinionated code formatter for automatic formatting
+
+### ESLint Configuration
+
+Location: `.eslintrc.json`
+
+Key rules enforced:
+
+- `camelcase`: Enforces camelCase for variables and properties
+- `no-var`: Disallows `var` (use `const`/`let` only)
+- `prefer-const`: Suggests `const` when variables aren't reassigned
+- `semi`: Requires semicolons
+- `quotes`: Enforces single quotes
+- `indent`: 4-space indentation
+- `eqeqeq`: Requires strict equality (`===` and `!==`)
+- `curly`: Requires curly braces for all control statements
+- And 40+ additional rules for code quality
+
+### Prettier Configuration
+
+Location: `.prettierrc.json`
+
+Key settings:
+
+- `printWidth: 100` - Maximum line length
+- `tabWidth: 4` - 4 spaces per indentation level
+- `singleQuote: true` - Use single quotes
+- `semi: true` - Always use semicolons
+- `trailingComma: "es5"` - Trailing commas where valid in ES5
+- `endOfLine: "lf"` - Unix-style line endings
+
+### NPM Scripts
+
+Run these commands for linting and formatting:
+
+```bash
+# Check for linting errors
+npm run lint
+
+# Auto-fix linting errors
+npm run lint:fix
+
+# Format all files
+npm run format
+
+# Check formatting without making changes
+npm run format:check
+```
+
+### IDE Integration
+
+#### VS Code (Recommended)
+
+Install these extensions:
+
+1. **ESLint** (dbaeumer.vscode-eslint)
+2. **Prettier** (esbenp.prettier-vscode)
+
+Add to `.vscode/settings.json`:
+
+```json
+{
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    }
+}
+```
+
+### Pre-Commit Workflow
+
+Before committing code:
+
+1. Run `npm run lint` to check for errors
+2. Run `npm run lint:fix` to auto-fix issues
+3. Run `npm run format` to format all files
+4. Verify changes with `git diff`
+5. Commit your changes
+
+### Files Excluded from Formatting
+
+The `.prettierignore` file excludes:
+
+- `node_modules/`
+- Build outputs (`dist/`, `build/`)
+- Images and icons (`*.png`, `*.jpg`, etc.)
+- `manifest.json`
+
+### Benefits
+
+- **Consistency**: All code follows the same style
+- **Quality**: ESLint catches potential bugs and bad patterns
+- **Productivity**: No time wasted on style debates
+- **Onboarding**: New contributors follow standards automatically
+- **CI/CD Ready**: Can enforce standards in automated pipelines
+
+---
+
 ## Version History
 
 - **v1** - Initial conventions document
 - **v2** - Comprehensive update with all coding standards
+- **v3** - Adopted camelCase naming convention and added ESLint/Prettier tooling
